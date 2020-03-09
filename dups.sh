@@ -1,6 +1,7 @@
 #!/bin/bash
 
 EXIT_STATUS=0
+VERSION="0.0.1-goeko-20200308223153"
 
 SCRIPT=`basename $0`
 

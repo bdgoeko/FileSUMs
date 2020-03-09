@@ -7,10 +7,11 @@
 #  search for md5 in file
 #  see if name, size and maybe date match...
 
-EXIT_STATUS=1 #Guess things doing go good.
+EXIT_STATUS=0 #Guess things doing go good.
 
-SCRIPT=`uname $0`
+SCRIPT=`basename $0`
 DESCRIPTION="Script to search md5 db for all files in current hierarchy"
+VERSION="1.0.0-goeko-20200308223648"
 
 function usage {
   echo "Usage: ${SCRIPT} "

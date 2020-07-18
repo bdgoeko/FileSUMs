@@ -12,17 +12,34 @@ EXIT_STATUS=0 #Guess things doing go good.
 SCRIPT=`basename $0`
 DESCRIPTION="Script to search md5 db for all files in current hierarchy"
 VERSION="1.0.0-goeko-20200308223648"
+INDEXDIR=${HOME}
 
 function usage {
-  echo "Usage: ${SCRIPT} "
+  echo "Usage: ${SCRIPT}"
   echo "Description: ${DESCRIPTION}"
 }
 
+#check if index file in arguments...
+if test $# -gt 1 ; then
+  case "$1" in
+    -i|--index) # Specify an index file
+      # make sure a second argument...
+      INDEXDIR=$2
+      shift
+      shift
+    ;;
+    *)
+      echo "Unknown option '$1' ignoring"
+      usage
+    ;;
+  esac
+fi
+ 
 #Locate the db file
 # if no db option, or other directory to search look @home
-if test -d "${HOME}/.filemd5db"; then
+if test -d "${INDEXDIR}/.filemd5db"; then
   # find the newest version of the db file ?
-  FILEMD5DB="$HOME/.filemd5db/filesdb_202001260018.csv"
+  FILEMD5DB="${INDEXDIR}/.filemd5db/latest.csv"
 fi
 
 if test ! -f "${FILEMD5DB}"; then
@@ -50,6 +67,7 @@ if test ! -d "${SEARCHFROMHERE}" ; then
 fi
 
 
+echo "Searching index '${FILEMD5DB}'"
 echo "Searching file from '${SEARCHFROMHERE}' and below."
 echo "Doing '${MATCHTYPE}' match."
 

@@ -1,0 +1,10 @@
+# CLI to get all files from here on down
+pwd > file_md5sums.text; find . -depth -print | while read FILE; do if test -f "${FILE}"; then md5sum "${FILE}"; fi; done >> file_md5sums.text
+
+
+#combine md5sum files
+find . -name file_md5sums.text -print | while read FILE ; do echo $FILE; cat $FILE >> file_md5sums.text; done
+
+
+
+

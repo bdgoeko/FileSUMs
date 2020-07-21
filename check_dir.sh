@@ -1,5 +1,6 @@
 #!/bin/bash
 
+DESCRIPTION=" Progam to search the MD5 Index file"
 # For every file see if there is a current dup in the db ? 
 # First see if there is a file by same name in db ? 
 # or just go for the MD5 sum, 
@@ -11,28 +12,51 @@ EXIT_STATUS=0 #Guess things doing go good.
 
 SCRIPT=`basename $0`
 DESCRIPTION="Script to search md5 db for all files in current hierarchy"
-VERSION="1.0.0-goeko-20200308223648"
+VERSION="2.0.0-goeko-20200721092251"
 INDEXDIR=${HOME}
+export NOMATCH=0
+export VERBOSE=/bin/false
+SEARCHFROMHERE=.
 
 function usage {
-  echo "Usage: ${SCRIPT}"
+  echo "Usage: ${SCRIPT} [-i|--index DIRECTORY_BASE_OF_FILEMD5_INDEX] [--verbose] "
   echo "Description: ${DESCRIPTION}"
 }
 
+echo "$# $*"
 #check if index file in arguments...
-if test $# -gt 1 ; then
+if test $# -ge 1 ; then
+#for ARG in $*
+while test $#  -ge 1
+do
   case "$1" in
     -i|--index) # Specify an index file
+      echo "Setting FileMD5 index"
       # make sure a second argument...
       INDEXDIR=$2
       shift
       shift
     ;;
+    -v|--verbose)
+      echo "Setting verbose"
+      VERBOSE=/bin/true
+      shift
+    ;;
     *)
-      echo "Unknown option '$1' ignoring"
-      usage
+      # if last argument, must be dir... 
+      ##if ${ARGCNT} = $# ; then
+      #  if test $# -ge 1; then
+      #    SEARCHFROMHERE=${ARG}
+      #  else
+          SEARCHFROMHERE=.
+      #  fi
+      #else
+        echo "Unknown option '$1' ignoring"
+        usage
+      #fi
     ;;
   esac
+done
 fi
  
 #Locate the db file
@@ -55,12 +79,6 @@ MATCHTYPE=MD5PLUS
 #  MD5 - just match the MD5 Sum
 #  NAMEMD5 - match name then the MD5 Sum
 
-if test $# -ge 1; then
-  SEARCHFROMHERE=$1
-else
-  SEARCHFROMHERE=.
-fi
-
 if test ! -d "${SEARCHFROMHERE}" ; then
   echo "Not a directory."
   exit 130
@@ -71,17 +89,20 @@ echo "Searching index '${FILEMD5DB}'"
 echo "Searching file from '${SEARCHFROMHERE}' and below."
 echo "Doing '${MATCHTYPE}' match."
 
-find "${SEARCHFROMHERE}/" -depth -print | while read AFILE
+#find "${SEARCHFROMHERE}/" -depth -print | while read AFILE
+for AFILE in `find "${SEARCHFROMHERE}/" -depth -print`
 do
   MATCHES=""
   if test ! -f "${AFILE}"; then
     echo "Not a file '${AFILE}', skipping"
   else
-    echo "File: '${AFILE}'"
+    echo -e "File: '${AFILE}' \c"
     case ${MATCHTYPE} in
       MD5PLUS)
         FILEMD5=`md5sum "${AFILE}"|cut -d\  -f1`
-        echo "Md5Sum '${FILEMD5}'"
+        # add verbose to print this
+        ${VERBOSE} && echo ""
+        ${VERBOSE} && echo "Md5Sum '${FILEMD5}'"
         MATCHES=`grep ${FILEMD5} "${FILEMD5DB}"`
       ;;
       *)
@@ -93,10 +114,24 @@ do
 
     if test -n "${MATCHES}"; then
       echo "Mactch found"
-      echo "${MATCHES}"
+      # add verbose to print this
+      ${VERBOSE} && echo "${MATCHES}"
       EXIST_STATUS=0
+    else
+      echo "no match"
+      let NOMATCH++
+      export NOMATCH
     fi
      
   fi
 
 done
+
+if test ${NOMATCH} -ne 0 ; then
+  echo "no match for '${NOMATCH}' files, see above output."
+fi
+
+
+echo "Run complete."
+
+exit ${EXIST_STATUS}

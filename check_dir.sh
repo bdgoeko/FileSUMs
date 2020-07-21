@@ -12,7 +12,7 @@ EXIT_STATUS=0 #Guess things doing go good.
 
 SCRIPT=`basename $0`
 DESCRIPTION="Script to search md5 db for all files in current hierarchy"
-VERSION="2.0.0-goeko-20200721092251"
+VERSION="2.0.1-goeko-20200721130520"
 INDEXDIR=${HOME}
 export NOMATCH=0
 export VERBOSE=/bin/false
@@ -25,10 +25,12 @@ function usage {
 
 echo "$# $*"
 #check if index file in arguments...
+# we are super broken, only one argumet
 if test $# -ge 1 ; then
 #for ARG in $*
 while test $#  -ge 1
 do
+  ${VERBOSE} && echo "Arg '$1'"
   case "$1" in
     -i|--index) # Specify an index file
       echo "Setting FileMD5 index"
@@ -90,7 +92,8 @@ echo "Searching file from '${SEARCHFROMHERE}' and below."
 echo "Doing '${MATCHTYPE}' match."
 
 #find "${SEARCHFROMHERE}/" -depth -print | while read AFILE
-for AFILE in `find "${SEARCHFROMHERE}/" -depth -print`
+while read AFILE
+#for AFILE in `find "${SEARCHFROMHERE}/" -depth -print`
 do
   MATCHES=""
   if test ! -f "${AFILE}"; then
@@ -119,13 +122,12 @@ do
       EXIST_STATUS=0
     else
       echo "no match"
-      let NOMATCH++
-      export NOMATCH
+      #let NOMATCH++
+      ((NOMATCH++ ))
+      #export NOMATCH
     fi
-     
   fi
-
-done
+done < <(find "${SEARCHFROMHERE}/" -depth -print)
 
 if test ${NOMATCH} -ne 0 ; then
   echo "no match for '${NOMATCH}' files, see above output."

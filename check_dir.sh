@@ -12,10 +12,11 @@ EXIT_STATUS=0 #Guess things doing go good.
 
 SCRIPT=`basename $0`
 DESCRIPTION="Script to search md5 db for all files in current hierarchy"
-VERSION="2.0.1-goeko-20200721130520"
+VERSION="2.0.2-goeko-20200721235547"
 INDEXDIR=${HOME}
 export NOMATCH=0
 export VERBOSE=/bin/false
+export FILECNT=0
 SEARCHFROMHERE=.
 
 function usage {
@@ -99,6 +100,7 @@ do
   if test ! -f "${AFILE}"; then
     echo "Not a file '${AFILE}', skipping"
   else
+    ((FILECNT++))
     echo -e "File: '${AFILE}' \c"
     case ${MATCHTYPE} in
       MD5PLUS)
@@ -129,8 +131,12 @@ do
   fi
 done < <(find "${SEARCHFROMHERE}/" -depth -print)
 
+echo "Checked '${FILECNT}'"
 if test ${NOMATCH} -ne 0 ; then
   echo "no match for '${NOMATCH}' files, see above output."
+  let TMP=$NOMATCH*100
+  let PERCENT_MATCH=$TMP/$FILECNT
+  echo "${PERCENT_MATCH}% file(s) NOT found."
 fi
 
 
